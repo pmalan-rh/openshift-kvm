@@ -2,6 +2,8 @@
 
 ## Standard RHEL9 install
 
+### Create a Openshift User with admin priviledges
+
 ### Add Virtualization
 
 dnf install qemu-kvm libvirt virt-install virt-viewer cockpit-machines wget
@@ -20,12 +22,15 @@ intel_iommu=on
 
 		options kvm_intel nested=1
 
+## Env 
+   
+
 ## Create VMS and Openshift Install artifacts
 
 ### Virtual Machines
 
     cd ~
-    mkdir -p openshift/{vms,install,mirror}
+    mkdir -p openshift/{vms,install,mirror,downloads}
     cd openshift/vms
     qemu-img create node1_os 120G
     qemu-img create node2_os 120G
@@ -34,16 +39,33 @@ intel_iommu=on
     virt-install --name node2 --memory 16384 --vcpus 8 --disk node2_os --import --os-variant rhl9 --noreboot
     virt-install --name node3 --memory 16384 --vcpus 8 --disk node3_os --import --os-variant rhl9 --noreboot
 
-### Openshift - all under openshift/install
+### Openshift - binaries
     
-    cd ~/openshift/install
-    // pull-secret.txt from console.redhat.com
+    cd ~/openshift/downloads
     wget https://mirror.openshift.com/pub/openshift-v4/x86_64/clients/ocp/stable/openshift-install-linux.tar.gz
     wget https://mirror.openshift.com/pub/openshift-v4/x86_64/clients/ocp/stable/openshift-client-linux.tar.gz
-    wget https://developers.redhat.com/content-gateway/rest/mirror/pub/openshift-v4/clients/mirror-registry/latest/mirror-registry.tar.gz
     ls *tar.gz | xargs -n 1 tar -zxvf
     mkdir ~/bin
     mv oc kubectl openshift-install ~/bin
+    wget https://developers.redhat.com/content-gateway/rest/mirror/pub/openshift-v4/clients/mirror-registry/latest/mirror-registry.tar.gz
+
+## Certificates and pull-secret
     
+    cd ~/install
+    // pull-secret.txt from console.redhat.com/openshift/downloads
+    // Certificate rhel9 host (or wildcard for rhel9 host domain) cert/key
+    // reg.pem
+    // reg.key
+    
+    
+## Setup Mirror
+    
+
+### Mirror Registry
+    cd ~/openshift/mirror
+    tar zxvf downloads/mirror-registry.tar.gz
+    
+
+     
     
             

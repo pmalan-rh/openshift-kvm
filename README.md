@@ -1,29 +1,39 @@
-# openshift-kvm
+= openshift-kvm
 
-## Standard RHEL9 install
+== Standard RHEL9 install
 
-### Create a Openshift User with admin priviledges
+=== Create a Openshift User with admin priviledges
 
-### Add Virtualization
+=== Add Virtualization
 
-dnf install qemu-kvm libvirt virt-install virt-viewer cockpit-machines wget
+dnf install qemu-kvm libvirt virt-install virt-viewer cockpit-machines wget podman 
 for drv in qemu network nodedev nwfilter secret storage interface; do systemctl start virt${drv}d{,-ro,-admin}.socket; done
 virt-host-validate
 
-#### Fix boot parameters - depending on CPU
+=== Fix boot parameters - depending on CPU
 
-##### Intel
+=== Intel
 intel_iommu=on
 
     grubby –update-kernel=ALL –args=”intel_iommu=on"
 
-#### Enable Nested virtualization for Openshift Virtualization
+=== Enable Nested virtualization for Openshift Virtualization
 /etc/modprobe.d/kvm.conf
 
 		options kvm_intel nested=1
 
-## Env 
-   
+== Environment
+
+=== Add env variables to keep track of settings
+
+[source]
+----
+cat <<EOF >> .bashrc
+QUAY_HOSTNAME=$(hostname -f)
+QUAY_USER=quay
+QUAY_PASSWORD=quayquay
+EOF
+----
 
 ## Create VMS and Openshift Install artifacts
 
@@ -55,16 +65,21 @@ intel_iommu=on
     // pull-secret.txt from console.redhat.com/openshift/downloads
     // Certificate rhel9 host (or wildcard for rhel9 host domain) cert/key
     // reg.pem
-    // reg.key
+    // regkey.pem
     
     
 ## Setup Mirror
     
 
 ### Mirror Registry
+
     cd ~/openshift/mirror
     tar zxvf downloads/mirror-registry.tar.gz
-    
+    ssh-keygen
+    ssh-copy-id $QUAY_HOSTNAME
+    sudo ./mirror-registry install --initUser $QUAY_USER --initPassword $QUAY_PASSWORD --quayHostname ${QUAY_HOSTNAME} --sslCert ../install/reg.pem --sslKey ../install/regkey.pem
+    sudo --add-port=8443/tcp --zone=public --permanent
+    sudo firewall-cmd --reload
 
      
     

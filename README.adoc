@@ -35,6 +35,12 @@ cat <<EOF >> .bashrc.d/openshift.env
 export QUAY_HOSTNAME=$(hostname -f)
 export QUAY_USER=quay
 export QUAY_PASSWORD=quayquay
+export OCP_BASEDOMAIN=pietersmalan.com
+export OCP_CLUSTERNAME=ocp
+export OCP_CLUSTERMACHINECIDR=$(ip addr show |grep -w inet |grep -v 127.0.0.1|awk '{ print $4}'|sed "s/255/0/g"|head -n1)
+export OCP_CLUSTERMACHINECIDR=$OCP_CLUSTERMACHINECIDR/$(ip addr show |grep -w inet |grep -v 127.0.0.1|awk '{ print $2}'| cut -d "/" -f 2|head -n1)
+export OCP_CLUSTERAPI=$(dig +short api.${OCP_CLUSTERNAME}.${OCP_BASEDOMAIN})
+export OCP_CLUSTERINGRESS=$(dig +short x.apps.${OCP_CLUSTERNAME}.${OCP_BASEDOMAIN})
 EOF
 
 ----
@@ -148,6 +154,39 @@ cat ../install/pull-secret.txt | jq . > pull-secret.json
 cp pull-secret.json ${XDG_RUNTIME_DIR}/containers/auth.json
 podman login --username $QUAY_USER --password $QUAY_PASSWORD $QUAY_HOSTNAME:8443
 cp ${XDG_RUNTIME_DIR}/containers/auth.json pull-secret.json
+export SECRET=pull-secret.json
+cat <<EOF > install-config.yaml
+additionalTrustBundlePolicy: Proxyonly
+apiVersion: v1
+baseDomain: ${OCP_BASEDOMAIN}
+controlPlane:
+  architecture: amd64
+  hyperthreading: Enabled
+  name: master
+  replicas: 3
+metadata:
+  creationTimestamp: null
+  name: ${OCP_CLUSTERNAME}
+networking:
+  clusterNetwork:
+  - cidr: 10.128.0.0/14
+    hostPrefix: 23
+  machineNetwork:
+  - cidr: ${OCP_CLUSTERMACHINECIDR}
+  networkType: OVNKubernetes
+  serviceNetwork:
+  - 172.30.0.0/16
+platform:
+  baremetal:
+    apiVIPs:
+    - ${OCP_CLUSTERAPI}
+    ingressVIPs:
+    - ${OCP_CLUSTERINGRESS}
+publish: External
+pullSecret: '$(cat pull-secret.json)'
+sshKey: |
+  $(cat ~/.ssh/id_rsa.pub)
+EOF
 
 ----
 

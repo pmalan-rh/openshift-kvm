@@ -80,10 +80,10 @@ cd ~/install
 // regkey.pem
 ----   
     
-== Setup Mirror
+== Mirror Registry
     
 
-=== Mirror Registry
+=== Mirror Registry Install
 
 [source]
 ----
@@ -91,9 +91,15 @@ cd ~/openshift/mirror
 tar zxvf downloads/mirror-registry.tar.gz
 ssh-keygen
 ssh-copy-id $QUAY_HOSTNAME
+sudo cp ../install/reg.pem /etc/pki/ca-trust/source/anchors/
+sudo update-ca-trust
+# Not sure if required
+sudo ausearch -c 'lsmd' --raw | audit2allow -M my-lsmd
+sudo semodule -X 300 -i my-lsmd.pp
 sudo ./mirror-registry install --initUser $QUAY_USER --initPassword $QUAY_PASSWORD --quayHostname ${QUAY_HOSTNAME} --sslCert ../install/reg.pem --sslKey ../install/regkey.pem
 sudo firewall-cmd --add-port=8443/tcp --zone=public --permanent
 sudo firewall-cmd --reload
+
 ----
      
 === Populate Mirror Registry (Online)
@@ -106,6 +112,13 @@ LOCAL_REGISTRY=${QUAY_HOSTNAME}:8443
 LOCAL_REPOSITORY='quay/ocp'
 cat ../install/pull-secret.txt | jq . > pull-secret.json
 cp pull-secret.json ${XDG_RUNTIME_DIR}/containers/auth.json
+#for R in $(cat pull-secret.json | jq -r '.auths|keys[]'); do
+#  echo "Logging into $R";
+#  U=$(jq -r ".auths.\"$R\".auth" $PULL_SECRET_PATH | base64 -d | awk -F: '{print $1}')
+#  P=$(jq -r ".auths.\"$R\".auth" $PULL_SECRET_PATH | base64 -d | awk -F: '{print $2}')
+#  podman login -u $U -p $P $R
+#  
+#done
 podman login --username $QUAY_USER --password $QUAY_PASSWORD $QUAY_HOSTNAME:8443
 cp ${XDG_RUNTIME_DIR}/containers/auth.json pull-secret.json
 LOCAL_SECRET_JSON='pull-secret.json'

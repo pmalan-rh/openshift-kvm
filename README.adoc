@@ -112,19 +112,13 @@ sudo firewall-cmd --reload
 
 [source]
 ----
+
 cd ~/openshift/mirror
 OCP_RELEASE=$(openshift-install version|awk -F ' ' '{print $2}'|head -n 1)
 LOCAL_REGISTRY=${QUAY_HOSTNAME}:8443
 LOCAL_REPOSITORY='quay/ocp'
 cat ../install/pull-secret.txt | jq . > pull-secret.json
 cp pull-secret.json ${XDG_RUNTIME_DIR}/containers/auth.json
-#for R in $(cat pull-secret.json | jq -r '.auths|keys[]'); do
-#  echo "Logging into $R";
-#  U=$(jq -r ".auths.\"$R\".auth" $PULL_SECRET_PATH | base64 -d | awk -F: '{print $1}')
-#  P=$(jq -r ".auths.\"$R\".auth" $PULL_SECRET_PATH | base64 -d | awk -F: '{print $2}')
-#  podman login -u $U -p $P $R
-#  
-#done
 podman login --username $QUAY_USER --password $QUAY_PASSWORD $QUAY_HOSTNAME:8443
 cp ${XDG_RUNTIME_DIR}/containers/auth.json pull-secret.json
 LOCAL_SECRET_JSON='pull-secret.json'
@@ -150,6 +144,8 @@ oc adm release mirror -a ${LOCAL_SECRET_JSON} --from=quay.io/${PRODUCT_REPO}/${R
 [source]
 ----
 cd ~/openshift/install
+rm -Rf . 
+rm -Rf .open*
 cat ../install/pull-secret.txt | jq . > pull-secret.json
 cp pull-secret.json ${XDG_RUNTIME_DIR}/containers/auth.json
 podman login --username $QUAY_USER --password $QUAY_PASSWORD $QUAY_HOSTNAME:8443
@@ -190,17 +186,6 @@ platform:
     - ${OCP_CLUSTERAPI}
     ingressVIPs:
     - ${OCP_CLUSTERINGRESS}
-    hosts:
-      - name: ocp1
-        role: master
-        bootMACAddress: $(echo $(virsh dumpxml ocp1 | grep -Eo "mac address='(.*?)'")| cut -d"'" -f 2)
-      - name: ocp2
-        role: master
-        bootMACAddress: $(echo $(virsh dumpxml ocp2 | grep -Eo "mac address='(.*?)'")| cut -d"'" -f 2)
-      - name: ocp3
-        role: master
-        bootMACAddress: $(echo $(virsh dumpxml ocp3 | grep -Eo "mac address='(.*?)'")| cut -d"'" -f 2)
-    
 publish: External
 pullSecret: '$(cat pull-secret.json |jq -c .)'
 sshKey: |
@@ -215,6 +200,7 @@ imageContentSources:
 
 EOF
 
+openshift-install create manifests
 
 cat <<EOF > openshift/99_openshift_cluster-imageDigestMirrorSet.yaml
 apiVersion: config.openshift.io/v1
@@ -346,17 +332,18 @@ EOF
 mkdir cluster-manifests
 
 cat << EOF > cluster-manifests/pull-secret.yaml
----
 apiVersion: v1
 kind: Secret
 type: kubernetes.io/dockerconfigjson
 metadata:
-  name: pull-ztp-ocpsno58
-  namespace: cluster0
+  name: pull-ztp-${OCP_CLUSTERNAME}
+  namespace: ${CLUSTERNAME}
 stringData:
-  .dockerconfigjson: "$(cat pull-secret.json |jq -c .)"
+  .dockerconfigjson: '$(cat pull-secret.json |jq -c .)'
 EOF
 
 rm -Rf .openshift*
-openshift-install agent create cluster-manifests 
+openshift-install agent create cluster-manifests
+openshift-install agent create image
+
 ----

@@ -45,21 +45,12 @@ EOF
 . ~/.bashrc.d/openshift.env
 ----
 
-== Create VMS and Openshift Install artifacts
-
-=== Virtual Machines
+== Create Openshift Install artifacts
 
 [source]
 ----
 cd ~
 mkdir -p openshift/{vms,install,mirror,downloads}
-cd openshift/vms
-qemu-img create ocp1_os 120G
-qemu-img create ocp2_os 120G
-qemu-img create ocp3_os 120G
-virt-install --name ocp1 --memory 16384 --vcpus 8 --disk ocp1_os --import --os-variant rhl9 --noreboot
-virt-install --name ocp2 --memory 16384 --vcpus 8 --disk ocp2_os --import --os-variant rhl9 --noreboot
-virt-install --name ocp3 --memory 16384 --vcpus 8 --disk ocp3_os --import --os-variant rhl9 --noreboot
 ----
 
 === Openshift - binaries
@@ -139,7 +130,7 @@ oc adm release mirror -a ${LOCAL_SECRET_JSON} --from=quay.io/${PRODUCT_REPO}/${R
 #oc adm release extract -a ${LOCAL_SECRET_JSON} --command=openshift-install "${LOCAL_REGISTRY}/${LOCAL_REPOSITORY}:${OCP_RELEASE}-${ARCHITECTURE}"
 ----
 
-== Openshift Install
+== OpenShift Install
 
 [source]
 ----
@@ -190,13 +181,14 @@ publish: External
 pullSecret: '$(cat pull-secret.json |jq -c .)'
 sshKey: |
   $(cat ~/.ssh/id_rsa.pub)
-imageContentSources:
-- mirrors:
-  - ${QUAY_HOSTNAME}:8443/quay/ocp
-  source: quay.io/openshift-release-dev/ocp-release
-- mirrors:
-  - ${QUAY_HOSTNAME}/quay/ocp
-  source: quay.io/openshift-release-dev/ocp-v4.0-art-dev
+
+#imageContentSources:
+#- mirrors:
+#  - ${QUAY_HOSTNAME}:8443/quay/ocp
+#  source: quay.io/openshift-release-dev/ocp-release
+#- mirrors:
+#  - ${QUAY_HOSTNAME}/quay/ocp
+#  source: quay.io/openshift-release-dev/ocp-v4.0-art-dev
 
 EOF
 
@@ -345,5 +337,21 @@ EOF
 rm -Rf .openshift*
 openshift-install agent create cluster-manifests
 openshift-install agent create image
+
+----
+
+== Create Cluster
+
+[source]
+----
+cd ~
+mkdir -p openshift/{vms,install,mirror,downloads}
+cd openshift/vms
+qemu-img create ocp1_os 120G
+qemu-img create ocp2_os 120G
+qemu-img create ocp3_os 120G
+virt-install --name ocp1 --memory 16384 --vcpus 8 --disk ocp1_os --import --os-variant rhl9 --noreboot
+virt-install --name ocp2 --memory 16384 --vcpus 8 --disk ocp2_os --import --os-variant rhl9 --noreboot
+virt-install --name ocp3 --memory 16384 --vcpus 8 --disk ocp3_os --import --os-variant rhl9 --noreboot
 
 ----

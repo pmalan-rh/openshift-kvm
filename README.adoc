@@ -198,7 +198,7 @@ platform:
         bootMACAddress: $(echo $(virsh dumpxml ocp3 | grep -Eo "mac address='(.*?)'")| cut -d"'" -f 2)
     
 publish: External
-pullSecret: '$(cat pull-secret.json)'
+pullSecret: '$(cat pull-secret.json |jq -c .)'
 sshKey: |
   $(cat ~/.ssh/id_rsa.pub)
 imageContentSources:

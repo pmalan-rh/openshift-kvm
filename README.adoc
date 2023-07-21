@@ -1,4 +1,5 @@
-= openshift-kvm
+= OpenShift on Red Hat Enterprise Virtualization
+
 
 == Standard RHEL9 install
 
@@ -51,6 +52,13 @@ EOF
 ----
 cd ~
 mkdir -p openshift/{vms,install,mirror,downloads}
+cd ~/openshift/vms
+qemu-img create ocp1_os 120G
+qemu-img create ocp2_os 120G
+qemu-img create ocp3_os 120G
+virt-install --name ocp1 --memory 16384 --vcpus 8 --boot hd,cdrom --disk ocp1_os --import --os-variant rhl9 --noreboot --cpu host --boot uefi --rng /dev/random
+virt-install --name ocp2 --memory 16384 --vcpus 8 --boot hd,cdrom --disk ocp2_os --import --os-variant rhl9 --noreboot --cpu host --boot uefi --rng /dev/random
+virt-install --name ocp3 --memory 16384 --vcpus 8 --boot hd,cdrom --disk ocp3_os --import --os-variant rhl9 --noreboot --cpu host --boot uefi --rng /dev/random
 ----
 
 === Openshift - binaries
@@ -344,14 +352,12 @@ openshift-install agent create image
 
 [source]
 ----
-cd ~
-mkdir -p openshift/{vms,install,mirror,downloads}
-cd openshift/vms
-qemu-img create ocp1_os 120G
-qemu-img create ocp2_os 120G
-qemu-img create ocp3_os 120G
-virt-install --name ocp1 --memory 16384 --vcpus 8 --disk ocp1_os --import --os-variant rhl9 --noreboot
-virt-install --name ocp2 --memory 16384 --vcpus 8 --disk ocp2_os --import --os-variant rhl9 --noreboot
-virt-install --name ocp3 --memory 16384 --vcpus 8 --disk ocp3_os --import --os-variant rhl9 --noreboot
+cd ~/openshift/vms
+virsh attach-disk ocp1 ~/openshift/install/agent.x86_64.iso sdb --driver qemu --type cdrom --mode readonly --config
+virsh attach-disk ocp2 ~/openshift/install/agent.x86_64.iso sdb --driver qemu --type cdrom --mode readonly --config
+virsh attach-disk ocp3 ~/openshift/install/agent.x86_64.iso sdb --driver qemu --type cdrom --mode readonly --config
+virsh start ocp1
+virsh start ocp2
+virsh start ocp3
 
 ----

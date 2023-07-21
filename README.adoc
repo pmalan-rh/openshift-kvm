@@ -30,7 +30,7 @@ intel_iommu=on
 ----
 cd ~
 mkdir .bashrc.d
-cat <<EOF >> .bashrc.d/openshift.env
+cat <<EOF > .bashrc.d/openshift.env
 #/bin/bash
 export QUAY_HOSTNAME=$(hostname -f)
 export QUAY_USER=quay
@@ -42,7 +42,7 @@ export OCP_CLUSTERMACHINECIDR=$OCP_CLUSTERMACHINECIDR/$(ip addr show |grep -w in
 export OCP_CLUSTERAPI=$(dig +short api.${OCP_CLUSTERNAME}.${OCP_BASEDOMAIN})
 export OCP_CLUSTERINGRESS=$(dig +short x.apps.${OCP_CLUSTERNAME}.${OCP_BASEDOMAIN})
 EOF
-
+. ~/.bashrc.d/openshift.env
 ----
 
 == Create VMS and Openshift Install artifacts

@@ -6,7 +6,7 @@
 
 === Add Virtualization
 
-dnf install qemu-kvm libvirt virt-install virt-viewer cockpit-machines wget podman 
+dnf install qemu-kvm libvirt virt-install virt-viewer cockpit-machines wget podman nmstate
 for drv in qemu network nodedev nwfilter secret storage interface; do systemctl start virt${drv}d{,-ro,-admin}.socket; done
 virt-host-validate
 

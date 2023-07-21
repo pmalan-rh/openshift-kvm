@@ -259,11 +259,13 @@ hosts:
   - hostname: ocp1
     role: master
     interfaces:
-      - name: ens0
+      - name: eno0
         macAddress: $(echo $(virsh dumpxml ocp1 | grep -Eo "mac address='(.*?)'")| cut -d"'" -f 2)
+    rootDeviceHints:
+      deviceName: /dev/sda
     networkConfig:
       interfaces:
-      - name: eth0
+      - name: eno0
         type: ethernet
         state: up
         mac-address: $(echo $(virsh dumpxml ocp1 | grep -Eo "mac address='(.*?)'")| cut -d"'" -f 2)
@@ -286,11 +288,11 @@ hosts:
   - hostname: ocp2
     role: master
     interfaces:
-      - name: ens0
+      - name: eno0
         macAddress: $(echo $(virsh dumpxml ocp2 | grep -Eo "mac address='(.*?)'")| cut -d"'" -f 2)
     networkConfig:
       interfaces:
-      - name: eth0
+      - name: eno0
         type: ethernet
         state: up
         mac-address: $(echo $(virsh dumpxml ocp2 | grep -Eo "mac address='(.*?)'")| cut -d"'" -f 2)
@@ -313,11 +315,11 @@ hosts:
   - hostname: ocp3
     role: master
     interfaces:
-      - name: ens0
+      - name: eno0
         macAddress: $(echo $(virsh dumpxml ocp3 | grep -Eo "mac address='(.*?)'")| cut -d"'" -f 2)
     networkConfig:
       interfaces:
-      - name: eth0
+      - name: eno0
         type: ethernet
         state: up
         mac-address: $(echo $(virsh dumpxml ocp3 | grep -Eo "mac address='(.*?)'")| cut -d"'" -f 2)
@@ -339,4 +341,4 @@ hosts:
             table-id: 254
 EOF
 
----
+----

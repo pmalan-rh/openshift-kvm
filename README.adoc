@@ -37,8 +37,8 @@ export QUAY_USER=quay
 export QUAY_PASSWORD=quayquay
 export OCP_BASEDOMAIN=pietersmalan.com
 export OCP_CLUSTERNAME=ocp
-export OCP_CLUSTERMACHINECIDR=$(ip addr show |grep -w inet |grep -v 127.0.0.1|awk '{ print $4}'|sed "s/255/0/g"|head -n1)
-export OCP_CLUSTERMACHINECIDR=$OCP_CLUSTERMACHINECIDR/$(ip addr show |grep -w inet |grep -v 127.0.0.1|awk '{ print $2}'| cut -d "/" -f 2|head -n1)
+export OCP_CLUSTERMACHINE=$(ip addr show |grep -w inet |grep -v 127.0.0.1|awk '{ print $4}'|sed "s/255/0/g"|head -n1)
+export OCP_CLUSTERMACHINECIDR=${OCP_CLUSTERMACHINE}/$(ip addr show |grep -w inet |grep -v 127.0.0.1|awk '{ print $2}'| cut -d "/" -f 2|head -n1)
 export OCP_CLUSTERAPI=$(dig +short api.${OCP_CLUSTERNAME}.${OCP_BASEDOMAIN})
 export OCP_CLUSTERINGRESS=$(dig +short x.apps.${OCP_CLUSTERNAME}.${OCP_BASEDOMAIN})
 EOF

@@ -211,9 +211,6 @@ imageContentSources:
 
 EOF
 
-rm -Rf .openshift*
-mkdir ../${OCP_BASEDOMAIN}
-openshift-install agent create cluster manifests
 
 cat <<EOF > openshift/99_openshift_cluster-imageDigestMirrorSet.yaml
 apiVersion: config.openshift.io/v1
@@ -341,4 +338,7 @@ hosts:
             table-id: 254
 EOF
 
+rm -Rf .openshift*
+mkdir ../${OCP_BASEDOMAIN}
+openshift-install agent create cluster-manifests -dir ../${OCP_BASEDOMAIN}
 ----

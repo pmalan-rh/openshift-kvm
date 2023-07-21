@@ -159,6 +159,10 @@ cat <<EOF > install-config.yaml
 additionalTrustBundlePolicy: Proxyonly
 apiVersion: v1
 baseDomain: ${OCP_BASEDOMAIN}
+compute:
+- hyperthreading: Enabled
+  name: worker
+  replicas: 0
 controlPlane:
   architecture: amd64
   hyperthreading: Enabled
@@ -182,10 +186,29 @@ platform:
     - ${OCP_CLUSTERAPI}
     ingressVIPs:
     - ${OCP_CLUSTERINGRESS}
+    hosts:
+      - name: ocp1
+	role: master
+        bootMACAddress: $(echo $(virsh dumpxml ocp1 | grep -Eo "mac address='(.*?)'")| cut -d"'" -f 2)
+      - name: ocp2
+	role: master
+        bootMACAddress: $(echo $(virsh dumpxml ocp2 | grep -Eo "mac address='(.*?)'")| cut -d"'" -f 2)
+      - name: ocp3
+	role: master
+        bootMACAddress: $(echo $(virsh dumpxml ocp3 | grep -Eo "mac address='(.*?)'")| cut -d"'" -f 2)
+    
 publish: External
 pullSecret: '$(cat pull-secret.json)'
 sshKey: |
   $(cat ~/.ssh/id_rsa.pub)
+imageContentSources:
+- mirrors:
+  - ${QUAY_HOSTNAME}:8443/quay/ocp
+  source: quay.io/openshift-release-dev/ocp-release
+- mirrors:
+  - ${QUAY_HOSTNAME}/quay/ocp
+  source: quay.io/openshift-release-dev/ocp-v4.0-art-dev
+
 EOF
 
 ----

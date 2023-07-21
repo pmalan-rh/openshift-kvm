@@ -252,5 +252,6 @@ kind: AgentConfig
 metadata:
   name: ${OCP_CLUSTERNAME}
 rendezvousIP: $(dig +short ocp1.${OCP_BASEDOMAIN})
+EOF
 
 ---

@@ -307,7 +307,7 @@ hosts:
             next-hop-address: $(ip addr show |grep -w inet |grep -v 127.0.0.1|awk '{ print $4}'|sed "s/255/1/g"|head -n1)
             next-hop-interface: ens0
             table-id: 254
-   - hostname: ocp3
+  - hostname: ocp3
     role: master
     interfaces:
       - name: ens0

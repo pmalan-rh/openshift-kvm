@@ -162,11 +162,15 @@ baseDomain: ${OCP_BASEDOMAIN}
 compute:
 - hyperthreading: Enabled
   name: worker
+  platform:
+    baremetal: {}
   replicas: 0
 controlPlane:
   architecture: amd64
   hyperthreading: Enabled
   name: master
+  platform:
+    baremetal: {}
   replicas: 3
 metadata:
   creationTimestamp: null
@@ -251,6 +255,7 @@ apiVersion: v1alpha1
 kind: AgentConfig
 metadata:
   name: ${OCP_CLUSTERNAME}
+  namespace: ${OCP_CLUSTERNAME}
 rendezvousIP: $(dig +short ocp1.${OCP_BASEDOMAIN})
 hosts:
   - hostname: ocp1
@@ -338,7 +343,20 @@ hosts:
             table-id: 254
 EOF
 
+mkdir cluster-manifests
+
+cat << EOF > cluster-manifests/pull-secret.yaml
+---
+apiVersion: v1
+kind: Secret
+type: kubernetes.io/dockerconfigjson
+metadata:
+  name: pull-ztp-ocpsno58
+  namespace: cluster0
+stringData:
+  .dockerconfigjson: "$(cat pull-secret.json |jq -c .)"
+EOF
+
 rm -Rf .openshift*
-mkdir ../${OCP_BASEDOMAIN}
-openshift-install agent create cluster-manifests --dir ../${OCP_BASEDOMAIN}
+openshift-install agent create cluster-manifests 
 ----

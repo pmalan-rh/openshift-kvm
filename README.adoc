@@ -53,12 +53,24 @@ EOF
 cd ~
 mkdir -p openshift/{vms,install,mirror,downloads}
 cd ~/openshift/vms
+cat <<EOF > kvmbridge.xml
+<network>
+  <name>host-bridge</name>
+  <forward mode="bridge"/>
+  <bridge name="br0"/>
+</network>
+EOF
+
+virsh net-define ${PWD}/kvmbridge.xml
+virsh net-start host-bridge
+virsh net-autostart host-bridge
+
 qemu-img create ocp1_os 120G
 qemu-img create ocp2_os 120G
 qemu-img create ocp3_os 120G
-virt-install --name ocp1 --memory 16384 --vcpus 8 --boot hd,cdrom --disk ocp1_os --import --os-variant rhl9 --noreboot --cpu host --boot uefi --rng /dev/random
-virt-install --name ocp2 --memory 16384 --vcpus 8 --boot hd,cdrom --disk ocp2_os --import --os-variant rhl9 --noreboot --cpu host --boot uefi --rng /dev/random
-virt-install --name ocp3 --memory 16384 --vcpus 8 --boot hd,cdrom --disk ocp3_os --import --os-variant rhl9 --noreboot --cpu host --boot uefi --rng /dev/random
+virt-install --name ocp1 --memory 16384 --vcpus 8 --boot hd,cdrom --disk ocp1_os --import --os-variant rhel9.2 --noreboot --cpu host --boot uefi --rng /dev/random --network bridge=br0 
+virt-install --name ocp2 --memory 16384 --vcpus 8 --boot hd,cdrom --disk ocp2_os --import --os-variant rhel9.2 --noreboot --cpu host --boot uefi --rng /dev/random --network bridge=br0 
+virt-install --name ocp3 --memory 16384 --vcpus 8 --boot hd,cdrom --disk ocp3_os --import --os-variant rhel9.2 --noreboot --cpu host --boot uefi --rng /dev/random --network bridge=br0 
 ----
 
 === Openshift - binaries

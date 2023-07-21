@@ -188,13 +188,13 @@ platform:
     - ${OCP_CLUSTERINGRESS}
     hosts:
       - name: ocp1
-	role: master
+        role: master
         bootMACAddress: $(echo $(virsh dumpxml ocp1 | grep -Eo "mac address='(.*?)'")| cut -d"'" -f 2)
       - name: ocp2
-	role: master
+        role: master
         bootMACAddress: $(echo $(virsh dumpxml ocp2 | grep -Eo "mac address='(.*?)'")| cut -d"'" -f 2)
       - name: ocp3
-	role: master
+        role: master
         bootMACAddress: $(echo $(virsh dumpxml ocp3 | grep -Eo "mac address='(.*?)'")| cut -d"'" -f 2)
     
 publish: External

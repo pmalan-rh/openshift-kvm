@@ -210,12 +210,9 @@ imageContentSources:
   source: quay.io/openshift-release-dev/ocp-v4.0-art-dev
 
 EOF
+openshift-install create manifests
 
-----
-
-[source]
-----
-cat <<EOF >> imageDigestMirrorSet.yaml
+cat <<EOF > openshift/99_openshift_cluster-imageDigestMirrorSet.yaml
 apiVersion: config.openshift.io/v1
 kind: ImageDigestMirrorSet
 metadata:
@@ -232,7 +229,7 @@ spec:
       source: quay.io
 EOF
 
-cat <<EOF >> imageTagMirrorSet.yaml
+cat <<EOF > openshift/99_openshift_cluster-imageTagMirrorSet.yaml
 apiVersion: config.openshift.io/v1
 kind: ImageTagMirrorSet
 metadata:
@@ -249,5 +246,11 @@ spec:
       source: quay.io
 EOF
 
+cat <<EOF > agent-config.yaml
+apiVersion: v1alpha1
+kind: AgentConfig
+metadata:
+  name: ${OCP_CLUSTERNAME}
+rendezvousIP: $(dig +short ocp1.${OCP_BASEDOMAIN})
 
 ---

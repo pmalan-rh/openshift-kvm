@@ -262,16 +262,16 @@ hosts:
       deviceName: /dev/sda
     networkConfig:
       interfaces:
-      - name: eno0
-        type: ethernet
-        state: up
-        mac-address: $(echo $(virsh dumpxml ocp1 | grep -Eo "mac address='(.*?)'")| cut -d"'" -f 2)
-        ipv4:
-          enabled: true
-          address:
-            - ip: $(dig +short ocp1.${OCP_BASEDOMAIN})
-              prefix-length: 23
-          dhcp: false
+        - name: eno0
+          type: ethernet
+          state: up
+          mac-address: $(echo $(virsh dumpxml ocp1 | grep -Eo "mac address='(.*?)'")| cut -d"'" -f 2)
+          ipv4:
+            enabled: true
+            address:
+              - ip: $(dig +short ocp1.${OCP_BASEDOMAIN})
+                prefix-length: 23
+            dhcp: false
       dns-resolver:
         config:
           server:
@@ -289,16 +289,16 @@ hosts:
         macAddress: $(echo $(virsh dumpxml ocp2 | grep -Eo "mac address='(.*?)'")| cut -d"'" -f 2)
     networkConfig:
       interfaces:
-      - name: eno0
-        type: ethernet
-        state: up
-        mac-address: $(echo $(virsh dumpxml ocp2 | grep -Eo "mac address='(.*?)'")| cut -d"'" -f 2)
-        ipv4:
-          enabled: true
-          address:
-            - ip: $(dig +short ocp2.${OCP_BASEDOMAIN})
-              prefix-length: 23
-          dhcp: false
+        - name: eno0
+          type: ethernet
+          state: up
+          mac-address: $(echo $(virsh dumpxml ocp2 | grep -Eo "mac address='(.*?)'")| cut -d"'" -f 2)
+          ipv4:
+            enabled: true
+            address:
+              - ip: $(dig +short ocp2.${OCP_BASEDOMAIN})
+                prefix-length: 23
+            dhcp: false
       dns-resolver:
         config:
           server:
@@ -316,16 +316,16 @@ hosts:
         macAddress: $(echo $(virsh dumpxml ocp3 | grep -Eo "mac address='(.*?)'")| cut -d"'" -f 2)
     networkConfig:
       interfaces:
-      - name: eno0
-        type: ethernet
-        state: up
-        mac-address: $(echo $(virsh dumpxml ocp3 | grep -Eo "mac address='(.*?)'")| cut -d"'" -f 2)
-        ipv4:
-          enabled: true
-          address:
-            - ip: $(dig +short ocp3.${OCP_BASEDOMAIN})
-              prefix-length: 23
-          dhcp: false
+        - name: eno0
+          type: ethernet
+          state: up
+          mac-address: $(echo $(virsh dumpxml ocp3 | grep -Eo "mac address='(.*?)'")| cut -d"'" -f 2)
+          ipv4:
+            enabled: true
+            address:
+              - ip: $(dig +short ocp3.${OCP_BASEDOMAIN})
+                prefix-length: 23
+            dhcp: false
       dns-resolver:
         config:
           server:

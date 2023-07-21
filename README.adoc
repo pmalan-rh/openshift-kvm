@@ -340,5 +340,5 @@ EOF
 
 rm -Rf .openshift*
 mkdir ../${OCP_BASEDOMAIN}
-openshift-install agent create cluster-manifests -dir ../${OCP_BASEDOMAIN}
+openshift-install agent create cluster-manifests --dir ../${OCP_BASEDOMAIN}
 ----

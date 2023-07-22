@@ -404,7 +404,7 @@ EOF
 cp reg.pem mirror/ca-bundle.crt
 
 rm -Rf .openshift*
-openshift-install agent create cluster-manifests
+#openshift-install agent create cluster-manifests
 openshift-install agent create image
 
 ----

@@ -358,14 +358,14 @@ cat <<EOF > mirror/registries.conf
   location = "quay.io/openshift-release-dev/ocp-release"
 
   [[registry.mirror]]
-    location = "${QUAY_HOSTNAME}:8443/openshift/release-images"
+    location = "${QUAY_HOSTNAME}:8443/quay/ocp"
 
 [[registry]]
   prefix = ""
-  location = "${QUAY_HOSTNAME}/openshift-release-dev/ocp-v4.0-art-dev"
+  location = "quay.io/openshift-release-dev/ocp-v4.0-art-dev"
 
   [[registry.mirror]]
-    location = "bastion.pietersmalan.com:8443/openshift/release"
+    location = "bastion.pietersmalan.com:8443/quay/ocp"
 EOF
 
 cp reg.pem mirror/ca-bundle.crt

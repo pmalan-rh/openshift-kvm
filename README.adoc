@@ -196,16 +196,33 @@ platform:
     ingressVIPs:
     - ${OCP_CLUSTERINGRESS}
     hosts:
-    - name: ocp1.${OCP_BASEDOMAIN}
+    - bmc:
+        address: ""
+        disableCertificateVerification: false
+        password: ""
+        username: ""
+      name: ocp1.${OCP_BASEDOMAIN}
       role: master
       bootMACAddress: $(echo $(virsh dumpxml ocp1 | grep -Eo "mac address='(.*?)'")| cut -d"'" -f 2)
-    - name: ocp2.${OCP_BASEDOMAIN}
+      bootMode: UEFI
+    - bmc:
+        address: ""
+        disableCertificateVerification: false
+        password: ""
+        username: ""
+      name: ocp2.${OCP_BASEDOMAIN}
       role: master
       bootMACAddress: $(echo $(virsh dumpxml ocp2 | grep -Eo "mac address='(.*?)'")| cut -d"'" -f 2)
-    - name: ocp3.${OCP_BASEDOMAIN}
+      bootMode: UEFI
+    - bmc:
+        address: ""
+        disableCertificateVerification: false
+        password: ""
+        username: ""
+      name: ocp3.${OCP_BASEDOMAIN}
       role: master
       bootMACAddress: $(echo $(virsh dumpxml ocp3 | grep -Eo "mac address='(.*?)'")| cut -d"'" -f 2)
-     
+      bootMode: UEFI
 publish: External
 pullSecret: '$(cat pull-secret.json |jq -c .)'
 sshKey: |

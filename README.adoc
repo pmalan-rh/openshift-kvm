@@ -155,6 +155,7 @@ oc adm release mirror -a ${LOCAL_SECRET_JSON} --from=quay.io/${PRODUCT_REPO}/${R
 [source]
 ----
 cd ~/openshift/install
+rm -Rf agent* auth cluster-manifests/ mirror/ manifests/ mirror/ openshift/ pull-secret.json rendezvousIP  .openshift_install.log
 cat ../install/pull-secret.txt | jq . > pull-secret.json
 cp pull-secret.json ${XDG_RUNTIME_DIR}/containers/auth.json
 podman login --username $QUAY_USER --password $QUAY_PASSWORD $QUAY_HOSTNAME:8443

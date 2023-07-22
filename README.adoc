@@ -354,6 +354,24 @@ stringData:
   .dockerconfigjson: '$(cat pull-secret.json |jq -c .)'
 EOF
 
+cat <<EOF > mirror/registries.conf
+[[registry]]
+  prefix = ""
+  location = "quay.io/openshift-release-dev/ocp-release"
+
+  [[registry.mirror]]
+    location = "${QUAY_HOSTNAME}:8443/openshift/release-images"
+
+[[registry]]
+  prefix = ""
+  location = "${QUAY_HOSTNAME}/openshift-release-dev/ocp-v4.0-art-dev"
+
+  [[registry.mirror]]
+    location = "bastion.pietersmalan.com:8443/openshift/release"
+EOF
+
+cp reg.pem mirror/ca-bundle.crt
+
 rm -Rf .openshift*
 openshift-install agent create cluster-manifests
 openshift-install agent create image

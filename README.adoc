@@ -199,14 +199,13 @@ publish: External
 pullSecret: '$(cat pull-secret.json |jq -c .)'
 sshKey: |
   $(cat ~/.ssh/id_rsa.pub)
-
-#imageContentSources:
-#- mirrors:
-#  - ${QUAY_HOSTNAME}:8443/quay/ocp
-#  source: quay.io/openshift-release-dev/ocp-release
-#- mirrors:
-#  - ${QUAY_HOSTNAME}/quay/ocp
-#  source: quay.io/openshift-release-dev/ocp-v4.0-art-dev
+imageContentSources:
+- mirrors:
+  - ${QUAY_HOSTNAME}:8443/quay/ocp
+  source: quay.io/openshift-release-dev/ocp-release
+- mirrors:
+  - ${QUAY_HOSTNAME}/quay/ocp
+  source: quay.io/openshift-release-dev/ocp-v4.0-art-dev
 
 EOF
 
@@ -257,13 +256,13 @@ hosts:
   - hostname: ocp1
     role: master
     interfaces:
-      - name: eno0
+      - name: enp1s0
         macAddress: $(echo $(virsh dumpxml ocp1 | grep -Eo "mac address='(.*?)'")| cut -d"'" -f 2)
     rootDeviceHints:
       deviceName: /dev/sda
     networkConfig:
       interfaces:
-        - name: eno0
+        - name: enp1s0
           type: ethernet
           state: up
           mac-address: $(echo $(virsh dumpxml ocp1 | grep -Eo "mac address='(.*?)'")| cut -d"'" -f 2)
@@ -286,11 +285,11 @@ hosts:
   - hostname: ocp2
     role: master
     interfaces:
-      - name: eno0
+      - name: enp1s0
         macAddress: $(echo $(virsh dumpxml ocp2 | grep -Eo "mac address='(.*?)'")| cut -d"'" -f 2)
     networkConfig:
       interfaces:
-        - name: eno0
+        - name: enp1s0
           type: ethernet
           state: up
           mac-address: $(echo $(virsh dumpxml ocp2 | grep -Eo "mac address='(.*?)'")| cut -d"'" -f 2)
@@ -313,11 +312,11 @@ hosts:
   - hostname: ocp3
     role: master
     interfaces:
-      - name: eno0
+      - name: enp1s0
         macAddress: $(echo $(virsh dumpxml ocp3 | grep -Eo "mac address='(.*?)'")| cut -d"'" -f 2)
     networkConfig:
       interfaces:
-        - name: eno0
+        - name: enp1s0
           type: ethernet
           state: up
           mac-address: $(echo $(virsh dumpxml ocp3 | grep -Eo "mac address='(.*?)'")| cut -d"'" -f 2)
@@ -352,6 +351,7 @@ stringData:
   .dockerconfigjson: '$(cat pull-secret.json |jq -c .)'
 EOF
 
+mkdir mirror
 cat <<EOF > mirror/registries.conf
 [[registry]]
   prefix = ""

@@ -62,6 +62,8 @@ subscription-manager repos --enable fast-datapath-for-rhel-9-x86_64-rpms
 dnf install openvswitch3.0
 systemctl enable --now openvswitch
 ovs-vsctl add-br ovsbr0
+EOF
+
 cd ~
 mkdir -p openshift/{vms,install,mirror,downloads}
 cd openshift/vms

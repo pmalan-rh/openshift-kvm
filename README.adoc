@@ -25,6 +25,41 @@ intel_iommu=on
 
 == Environment
 
+=== SELINUX
+[source]
+----
+sudo -i -- <<EOC
+semanage import <<EOF
+boolean -D
+login -D
+interface -D
+user -D
+port -D
+node -D
+fcontext -D
+module -D
+ibendport -D
+ibpkey -D
+permissive -D
+boolean -m -1 virt_sandbox_use_all_caps
+boolean -m -1 virt_use_nfs
+permissive -a insights_client_t
+permissive -a rhcd_t
+EOF
+EOC
+
+
+=== OpenVSwitch
+[source]
+----
+#wget https://www.openvswitch.org/releases/openvswitch-3.1.2.tar.gz
+#fast-datapath-for-rhel-9-x86_64-rpms
+
+subscription-manager repos --enable fast-datapath-for-rhel-9-x86_64-rpms
+dnf install openvswitch3.0
+systemctl enable --now openvswitch
+ovs-vsctl add-br ovsbr0
+
 === Add env variables to keep track of settings
 
 [source]
@@ -52,14 +87,14 @@ EOF
 ----
 cd ~
 mkdir -p openshift/{vms,install,mirror,downloads}
-cd ~/openshift/vms
-cat <<EOF > kvmbridge.xml
-<network>
-  <name>host-bridge</name>
-  <forward mode="bridge"/>
-  <bridge name="br0"/>
-</network>
-EOF
+cd openshift/vms
+#sudo cat <<EON > kvmbridge.xml
+#<network>
+#  <name>host-bridge</name>
+#  <forward mode="bridge"/>
+#  <bridge name="br0"/>
+#</network>
+#EON
 
 virsh net-define ${PWD}/kvmbridge.xml
 virsh net-start host-bridge
@@ -68,9 +103,9 @@ virsh net-autostart host-bridge
 qemu-img create ocp1_os 120G
 qemu-img create ocp2_os 120G
 qemu-img create ocp3_os 120G
-virt-install --name ocp1 --memory 16384 --vcpus 8 --boot hd,cdrom --disk ocp1_os --import --os-variant rhel9.2 --noreboot --cpu host --boot uefi --rng /dev/random --network bridge=br0 
-virt-install --name ocp2 --memory 16384 --vcpus 8 --boot hd,cdrom --disk ocp2_os --import --os-variant rhel9.2 --noreboot --cpu host --boot uefi --rng /dev/random --network bridge=br0 
-virt-install --name ocp3 --memory 16384 --vcpus 8 --boot hd,cdrom --disk ocp3_os --import --os-variant rhel9.2 --noreboot --cpu host --boot uefi --rng /dev/random --network bridge=br0 
+virt-install --name ocp1 --memory 16384 --vcpus 8 --boot hd,cdrom --disk ocp1_os --import --os-variant rhel9.2 --noreboot --cpu host --boot uefi --rng /dev/random --network type=direct,source=bond0,source_mode=bridge,model=virtio
+virt-install --name ocp2 --memory 16384 --vcpus 8 --boot hd,cdrom --disk ocp2_os --import --os-variant rhel9.2 --noreboot --cpu host --boot uefi --rng /dev/random --network type=direct,source=bond0,source_mode=bridge,model=virtio
+virt-install --name ocp3 --memory 16384 --vcpus 8 --boot hd,cdrom --disk ocp3_os --import --os-variant rhel9.2 --noreboot --cpu host --boot uefi --rng /dev/random --network type=direct,source=bond0,source_mode=bridge,model=virtio
 ----
 
 === Openshift - binaries
@@ -242,41 +277,41 @@ imageContentSources:
 
 EOF
 
-openshift-install create manifests
+#openshift-install create manifests
 
-cat <<EOF > openshift/99_openshift_cluster-imageDigestMirrorSet.yaml
-apiVersion: config.openshift.io/v1
-kind: ImageDigestMirrorSet
-metadata:
-  name: oc-mirror
-spec:
-  imageDigestMirrors:
-    - mirrorSourcePolicy: AllowContactingSource
-      mirrors:
-        - '${QUAY_HOSTNAME}:8443'
-      source: registry.redhat.io
-    - mirrorSourcePolicy: AllowContactingSource
-      mirrors:
-        - '${QUAY_HOSTNAME}:8443'
-      source: quay.io
-EOF
+#cat <<EOF > openshift/99_openshift_cluster-imageDigestMirrorSet.yaml
+#apiVersion: config.openshift.io/v1
+#kind: ImageDigestMirrorSet
+#metadata:
+#  name: oc-mirror
+#spec:
+#  imageDigestMirrors:
+#    - mirrorSourcePolicy: AllowContactingSource
+#      mirrors:
+#        - '${QUAY_HOSTNAME}:8443'
+#      source: registry.redhat.io
+#    - mirrorSourcePolicy: AllowContactingSource
+#      mirrors:
+#        - '${QUAY_HOSTNAME}:8443'
+#      source: quay.io
+#EOF
 
-cat <<EOF > openshift/99_openshift_cluster-imageTagMirrorSet.yaml
-apiVersion: config.openshift.io/v1
-kind: ImageTagMirrorSet
-metadata:
-  name: oc-mirror
-spec:
-  imageTagMirrors:
-    - mirrorSourcePolicy: AllowContactingSource
-      mirrors:
-        - '${QUAY_HOSTNAME}:8443'
-      source: registry.redhat.io
-    - mirrorSourcePolicy: AllowContactingSource
-      mirrors:
-        - '${QUAY_HOSTNAME}:8443'
-      source: quay.io
-EOF
+#cat <<EOF > openshift/99_openshift_cluster-imageTagMirrorSet.yaml
+#apiVersion: config.openshift.io/v1
+#kind: ImageTagMirrorSet
+#metadata:
+#  name: oc-mirror
+#spec:
+#  imageTagMirrors:
+#    - mirrorSourcePolicy: AllowContactingSource
+#      mirrors:
+#        - '${QUAY_HOSTNAME}:8443'
+#      source: registry.redhat.io
+#    - mirrorSourcePolicy: AllowContactingSource
+#      mirrors:
+#        - '${QUAY_HOSTNAME}:8443'
+#      source: quay.io
+#EOF
 
 cat <<EOF > agent-config.yaml
 apiVersion: v1alpha1
@@ -371,37 +406,37 @@ hosts:
             table-id: 254
 EOF
 
-mkdir cluster-manifests
+#mkdir cluster-manifests
 
-cat << EOF > cluster-manifests/pull-secret.yaml
-apiVersion: v1
-kind: Secret
-type: kubernetes.io/dockerconfigjson
-metadata:
-  name: pull-ztp-${OCP_CLUSTERNAME}
-  namespace: ${CLUSTERNAME}
-stringData:
-  .dockerconfigjson: '$(cat pull-secret.json |jq -c .)'
-EOF
+#cat << EOF > cluster-manifests/pull-secret.yaml
+#apiVersion: v1
+#kind: Secret
+#type: kubernetes.io/dockerconfigjson
+#metadata:
+#  name: pull-ztp-${OCP_CLUSTERNAME}
+#  namespace: ${CLUSTERNAME}
+#stringData:
+#  .dockerconfigjson: '$(cat pull-secret.json |jq -c .)'
+#EOF
 
-mkdir mirror
-cat <<EOF > mirror/registries.conf
-[[registry]]
-  prefix = ""
-  location = "quay.io/openshift-release-dev/ocp-release"
+#mkdir mirror
+#cat <<EOF > mirror/registries.conf
+#[[registry]]
+#  prefix = ""
+#  location = "quay.io/openshift-release-dev/ocp-release"
 
-  [[registry.mirror]]
-    location = "${QUAY_HOSTNAME}:8443/quay/ocp"
+#  [[registry.mirror]]
+#    location = "${QUAY_HOSTNAME}:8443/quay/ocp"
 
-[[registry]]
-  prefix = ""
-  location = "quay.io/openshift-release-dev/ocp-v4.0-art-dev"
+#[[registry]]
+#  prefix = ""
+#  location = "quay.io/openshift-release-dev/ocp-v4.0-art-dev"
 
-  [[registry.mirror]]
-    location = "bastion.pietersmalan.com:8443/quay/ocp"
-EOF
+#  [[registry.mirror]]
+#    location = "bastion.pietersmalan.com:8443/quay/ocp"
+#EOF
 
-cp reg.pem mirror/ca-bundle.crt
+#cp reg.pem mirror/ca-bundle.crt
 
 rm -Rf .openshift*
 #openshift-install agent create cluster-manifests
@@ -413,12 +448,19 @@ openshift-install agent create image
 
 [source]
 ----
-cd ~/openshift/vms
-virsh attach-disk ocp1 ~/openshift/install/agent.x86_64.iso sdb --driver qemu --type cdrom --mode readonly --config
-virsh attach-disk ocp2 ~/openshift/install/agent.x86_64.iso sdb --driver qemu --type cdrom --mode readonly --config
-virsh attach-disk ocp3 ~/openshift/install/agent.x86_64.iso sdb --driver qemu --type cdrom --mode readonly --config
+cd ~
+cp openshift/install/agent.x86_64.iso /tmp
+sudo -i -- <<EOF
+
+mv /tmp/agent.x86_64.iso /root/openshift/vms
+cd /root/openshift/vms
+chown oug+rw *
+virsh attach-disk ocp1 /root/openshift/vms/agent.x86_64.iso sdb --driver qemu --type cdrom --mode readonly --config
+virsh attach-disk ocp2 /root/openshift/vms/agent.x86_64.iso sdb --driver qemu --type cdrom --mode readonly --config
+virsh attach-disk ocp3 /root/openshift/vms/agent.x86_64.iso sdb --driver qemu --type cdrom --mode readonly --config
 virsh start ocp1
 virsh start ocp2
 virsh start ocp3
+EOF
 
 ----

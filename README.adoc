@@ -53,6 +53,7 @@ EOC
 
 [source]
 ----
+sudo -i -- <<EOF
 #wget https://www.openvswitch.org/releases/openvswitch-3.1.2.tar.gz
 #fast-datapath-for-rhel-9-x86_64-rpms
 #dnf provides ovs-vsctl
@@ -76,7 +77,7 @@ EON
 virsh net-define ovs-network
 virsh net-autostart ovs
 virsh net-start
-
+EOF
 ----
 
 === Add env variables to keep track of settings

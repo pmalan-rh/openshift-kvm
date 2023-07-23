@@ -47,7 +47,7 @@ permissive -a insights_client_t
 permissive -a rhcd_t
 EOF
 EOC
-
+----
 
 === OpenVSwitch
 

@@ -49,6 +49,17 @@ EOF
 EOC
 ----
 
+=== Grant User kvm / libvirt permissions
+
+[source]
+----
+sudo usermod -G kvm -a ${USER}
+# Add access to virsh commands
+sudo usermod -G libvirt -a ${USER}
+mkdir -p ~/.config/libvirt
+echo "uri_default = "qemu:///system"" > ~/.config/libvirt/libvirt.conf
+----
+
 === OpenVSwitch
 
 [source]
@@ -77,10 +88,11 @@ cd openshift/vms
 cat <<EON > vm-network.xml
 <network>
   <name>vm-network</name>
-  <uudi>$(uuidgen)</uudi>
   <forward mode="bridge"/>
   <bridge name="ovsbr0"/>
+  <model type="virtio"/>
   <virtualport type='openvswitch'/>
+  <portgroup name='native' default='yes' />
 </network>
 EON
 virsh net-define vm-network.xml

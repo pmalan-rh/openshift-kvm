@@ -381,8 +381,6 @@ hosts:
     interfaces:
       - name: enp1s0
         macAddress: $(echo $(virsh dumpxml ocp1 | grep -Eo "mac address='(.*?)'")| cut -d"'" -f 2)
-    rootDeviceHints:
-      deviceName: /dev/sda
     networkConfig:
       interfaces:
         - name: enp1s0

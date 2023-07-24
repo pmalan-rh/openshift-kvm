@@ -95,10 +95,10 @@ cd openshift/vms
 cat <<EON > vm-network.xml
 <network>
   <name>vm-network</name>
+  <uudi>$(uuidgen)</uudi>
   <forward mode="bridge"/>
-  <bridge name="vsbr1"/>
-  <model type="virtio"/>
-  <virtualport type='openvswitch'/>
+  <bridge name="ovsbr1"/>
+  <virtualport type='openswitch'/>
 </network>
 EON
 virsh net-define vm-network.xml

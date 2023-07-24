@@ -99,7 +99,6 @@ cat <<EON > vm-network.xml
   <bridge name="vsbr1"/>
   <model type="virtio"/>
   <virtualport type='openvswitch'/>
-  <portgroup name='native' default='yes' />
 </network>
 EON
 virsh net-define vm-network.xml

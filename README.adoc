@@ -79,6 +79,9 @@ nmcli conn add type ethernet con.interface ens6f0 master bond0
 nmcli conn add type ethernet con.interface ens6f1 master bond0
 nmcli conn add type ovs-port conn.interface port0 master vsbr1
 nmcli conn add type ovs-interface slave-type ovs-port conn.interface lan0 master port0 ipv4.method manual ipv4.addresses 10.0.1.10/24 ipv4.dns 10.0.1.1 ipv4.gateway 10.0.1.1
+# Mangement interface - not automatically created by nmcli
+nmcli con add type ovs-port conn.interface ovs-bridge master vsbr1 con-name ovs-px
+nmcli con add type ovs-interface slave-type ovs-port conn.interface vsbr1 master ovs-px con-name ovs-int-px
 ovs-appctl bond/show
 ovs-vsctl show
 ip a s

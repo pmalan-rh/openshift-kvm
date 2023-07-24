@@ -62,24 +62,25 @@ subscription-manager repos --enable fast-datapath-for-rhel-9-x86_64-rpms
 dnf install openvswitch3.0
 systemctl enable --now openvswitch
 ovs-vsctl add-br ovsbr0
+ovs-vsctl add-port ovbr0 bond0
 EOF
 
 cd ~
 mkdir -p openshift/{vms,install,mirror,downloads}
 cd openshift/vms
-cat <<EON > ovs-network.xml
+cat <<EON > vm-network.xml
 <network>
   <name>vm-network</name>
   <uudi>$(uuidgen)</uudi>
   <forward mode="bridge"/>
   <bridge name="ovsbr0"/>
-  <virtualport type='openswitch'/>
+  <virtualport type='openvswitch'/>
 </network>
 EON
-virsh net-define ovs-network
-virsh net-autostart ovs
-virsh net-start
-EOF
+virsh net-define vm-network.xml
+virsh net-autostart vm-network
+virsh net-start vm-network
+
 ----
 
 === Add env variables to keep track of settings
@@ -111,16 +112,12 @@ cd ~
 mkdir -p openshift/{vms,install,mirror,downloads}
 cd openshift/vms
 
-virsh net-define ${PWD}/kvmbridge.xml
-virsh net-start host-bridge
-virsh net-autostart host-bridge
-
 qemu-img create ocp1_os 120G
 qemu-img create ocp2_os 120G
 qemu-img create ocp3_os 120G
-virt-install --name ocp1 --memory 16384 --vcpus 8 --boot hd,cdrom --disk ocp1_os --import --os-variant rhel9.2 --noreboot --cpu host --boot uefi --rng /dev/random --network type=direct,source=bond0,source_mode=bridge,model=virtio
-virt-install --name ocp2 --memory 16384 --vcpus 8 --boot hd,cdrom --disk ocp2_os --import --os-variant rhel9.2 --noreboot --cpu host --boot uefi --rng /dev/random --network type=direct,source=bond0,source_mode=bridge,model=virtio
-virt-install --name ocp3 --memory 16384 --vcpus 8 --boot hd,cdrom --disk ocp3_os --import --os-variant rhel9.2 --noreboot --cpu host --boot uefi --rng /dev/random --network type=direct,source=bond0,source_mode=bridge,model=virtio
+virt-install --name ocp1 --memory 16384 --vcpus 8 --boot hd,cdrom --disk ocp1_os --import --os-variant rhel9.2 --noreboot --cpu host --boot uefi --rng /dev/random --network network=vm-network,model=virtio
+virt-install --name ocp2 --memory 16384 --vcpus 8 --boot hd,cdrom --disk ocp2_os --import --os-variant rhel9.2 --noreboot --cpu host --boot uefi --rng /dev/random --network network=vm-network,model=virtio
+virt-install --name ocp3 --memory 16384 --vcpus 8 --boot hd,cdrom --disk ocp3_os --import --os-variant rhel9.2 --noreboot --cpu host --boot uefi --rng /dev/random --network network=vm-network,model=virtio
 ----
 
 === Openshift - binaries
@@ -464,18 +461,13 @@ openshift-install agent create image
 [source]
 ----
 cd ~
-cp openshift/install/agent.x86_64.iso /tmp
-sudo -i -- <<EOF
-
-mv /tmp/agent.x86_64.iso /root/openshift/vms
-cd /root/openshift/vms
-chown oug+rw *
-virsh attach-disk ocp1 /root/openshift/vms/agent.x86_64.iso sdb --driver qemu --type cdrom --mode readonly --config
-virsh attach-disk ocp2 /root/openshift/vms/agent.x86_64.iso sdb --driver qemu --type cdrom --mode readonly --config
-virsh attach-disk ocp3 /root/openshift/vms/agent.x86_64.iso sdb --driver qemu --type cdrom --mode readonly --config
+cd openshift/vms
+virsh attach-disk ocp1 ~/openshift/install/agent.x86_64.iso sdb --driver qemu --type cdrom --mode readonly --config
+virsh attach-disk ocp2 ~/openshift/install/agent.x86_64.iso sdb --driver qemu --type cdrom --mode readonly --config
+virsh attach-disk ocp3 ~/openshift/install/agent.x86_64.iso sdb --driver qemu --type cdrom --mode readonly --config
 virsh start ocp1
 virsh start ocp2
 virsh start ocp3
-EOF
+
 
 ----

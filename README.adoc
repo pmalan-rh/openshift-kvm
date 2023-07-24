@@ -314,7 +314,6 @@ platform:
       role: master
       bootMACAddress: $(echo $(virsh dumpxml ocp3 | grep -Eo "mac address='(.*?)'")| cut -d"'" -f 2)
       bootMode: UEFI
-      libvirtURI: qemu:///system
       provisioningMACAddress: 52:54:00:ce:1a:21
       provisioningNetwork: Disabled
       provisioningNetworkInterface: ""

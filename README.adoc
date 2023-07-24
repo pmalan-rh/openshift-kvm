@@ -54,7 +54,7 @@ EOC
 [source]
 ----
 sudo usermod -G kvm -a ${USER}
-# Add access to virsh commands
+sudo usermod -G qemu -a ${USER}
 sudo usermod -G libvirt -a ${USER}
 mkdir -p ~/.config/libvirt
 echo 'uri_default = "qemu:///system"' > ~/.config/libvirt/libvirt.conf
@@ -72,14 +72,18 @@ sudo -i -- <<EOF
 subscription-manager repos --enable fast-datapath-for-rhel-9-x86_64-rpms
 dnf install openvswitch3.0
 systemctl enable --now openvswitch
-ovs-vsctl add-br ovsbr0
 
-ovs-vsctl add-port ovsbr0 int0 -- set Interface int0 type=internal
-ip addr add 10.0.1.230/24 dev int0 
-#ip link set int0 up
+nmcli conn add type ovs-bridge conn.interface vsbr1
+nmcli conn add type ovs-port conn.interface bond0 master vsbr1 ovs-port.lacp active
+nmcli conn add type ethernet con.interface ens6f0 master bond0
+nmcli conn add type ethernet con.interface ens6f1 master bond0
+nmcli conn add type ovs-port conn.interface port0 master vsbr1
+nmcli conn add type ovs-interface slave-type ovs-port conn.interface lan0 master port0 ipv4.method manual ipv4.addresses 10.0.1.10/24 ipv4.dns 10.0.1.1 ipv4.gateway 10.0.1.1
+ovs-appctl bond/show
+ovs-vsctl show
+ip a s
 
-echo "allow ovsbr0" >> /etc/qemu-kvm/bridge.conf
-#ovs-vsctl add-bond ovsbr0 bond0 ens6f0 ens6f1 lacp=active
+
 EOF
 
 cd ~
@@ -89,7 +93,7 @@ cat <<EON > vm-network.xml
 <network>
   <name>vm-network</name>
   <forward mode="bridge"/>
-  <bridge name="ovsbr0"/>
+  <bridge name="vsbr1"/>
   <model type="virtio"/>
   <virtualport type='openvswitch'/>
   <portgroup name='native' default='yes' />
@@ -135,26 +139,26 @@ cd ~
 mkdir -p openshift/{vms,install,mirror,downloads}
 cd ~/openshift/vms
 
-cat <<EOF > storage-pool.xml
-<pool type="dir">
-  <name>vms</name>
-  <target>
-    <path>$(pwd)</path>
-  </target>
-</pool>
-EOF
-virsh pool-define storage-pool.xml
-virsh pool-start vms
-virsh pool-autostart vms
+#cat <<EOF > storage-pool.xml
+#<pool type="dir">
+#  <name>vms</name>
+#  <target>
+#    <path>$(pwd)</path>
+#  </target>
+#</pool>
+#EOF
+#virsh pool-define storage-pool.xml
+#virsh pool-start vms
+#virsh pool-autostart vms
 
 rm *.xml
 
 #qemu-img create ocp1_os.qcow2 120G
 #qemu-img create ocp2_os.qcow2 120G
 #qemu-img create ocp3_os.qcow2 120G
-virt-install --name ocp1 --memory 16384 --vcpus 8 --boot hd,cdrom --disk ocp1_os,pool=vms,size=120 --import --os-variant rhel9.2 --noreboot --cpu host --boot uefi --rng /dev/random --network network=vm-network,model=virtio
-virt-install --name ocp2 --memory 16384 --vcpus 8 --boot hd,cdrom --disk ocp2_os,pool=vms,size=120 --import --os-variant rhel9.2 --noreboot --cpu host --boot uefi --rng /dev/random --network network=vm-network,model=virtio
-virt-install --name ocp3 --memory 16384 --vcpus 8 --boot hd,cdrom --disk ocp3_os,pool=vms,size=120 --import --os-variant rhel9.2 --noreboot --cpu host --boot uefi --rng /dev/random --network network=vm-network,model=virtio
+virt-install --name ocp1 --memory 16384 --vcpus 8 --boot hd,cdrom --disk ocp1_os,size=120,pool=default --import --os-variant rhel9.2 --noreboot --cpu host --boot uefi --rng /dev/random --network network=vm-network,model=virtio
+virt-install --name ocp2 --memory 16384 --vcpus 8 --boot hd,cdrom --disk ocp2_os,size=120,pool=default --import --os-variant rhel9.2 --noreboot --cpu host --boot uefi --rng /dev/random --network network=vm-network,model=virtio
+virt-install --name ocp3 --memory 16384 --vcpus 8 --boot hd,cdrom --disk ocp3_os,size=120,pool=default --import --os-variant rhel9.2 --noreboot --cpu host --boot uefi --rng /dev/random --network network=vm-network,model=virtio
 ----
 
 === Openshift - binaries
@@ -497,11 +501,11 @@ openshift-install agent create image
 
 [source]
 ----
-cd ~/openshift/vms
-cp ~/openshift/install/agent.x86_64.iso .
-virsh attach-disk ocp1 $(pwd)/openshift/vms/agent.x86_64.iso,pool=vms sdb --driver qemu --type cdrom --mode readonly --config
-virsh attach-disk ocp2 $(pwd)/openshift/vms/agent.x86_64.iso,pool=vms sdb --driver qemu --type cdrom --mode readonly --config
-virsh attach-disk ocp3 $(pwd)/openshift/vms/agent.x86_64.iso,pool=vms sdb --driver qemu --type cdrom --mode readonly --config
+#cd ~/openshift/vms
+sudo cp ~/openshift/install/agent.x86_64.iso /var/lib/libvirt/images/
+virsh attach-disk ocp1 /var/lib/libvirt/images/agent.x86_64.iso sdb --driver qemu --type cdrom --mode readonly --config
+virsh attach-disk ocp2 /var/lib/libvirt/images/agent.x86_64.iso sdb --driver qemu --type cdrom --mode readonly --config
+virsh attach-disk ocp3 /var/lib/libvirt/images/agent.x86_64.iso sdb --driver qemu --type cdrom --mode readonly --config
 virsh start ocp1
 virsh start ocp2
 virsh start ocp3

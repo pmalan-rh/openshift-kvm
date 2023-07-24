@@ -399,11 +399,11 @@ hosts:
       dns-resolver:
         config:
           server:
-            - $(ip addr show |grep -w inet |grep -v 127.0.0.1|awk '{ print $4}'|sed "s/255/1/g"|head -n1)
+            - 10.0.1.1
       routes:
         config:
           - destination: 0.0.0.0/0
-            next-hop-address: $(ip addr show |grep -w inet |grep -v 127.0.0.1|awk '{ print $4}'|sed "s/255/1/g"|head -n1)
+            next-hop-address: 10.0.1.1
             next-hop-interface: enp1s0
             table-id: 254
   - hostname: ocp2
@@ -426,11 +426,11 @@ hosts:
       dns-resolver:
         config:
           server:
-            - $(ip addr show |grep -w inet |grep -v 127.0.0.1|awk '{ print $4}'|sed "s/255/1/g"|head -n1)
+            - 10.0.1.1
       routes:
         config:
           - destination: 0.0.0.0/0
-            next-hop-address: $(ip addr show |grep -w inet |grep -v 127.0.0.1|awk '{ print $4}'|sed "s/255/1/g"|head -n1)
+            next-hop-address: 10.0.1.1
             next-hop-interface: enp1s0
             table-id: 254
   - hostname: ocp3
@@ -453,11 +453,11 @@ hosts:
       dns-resolver:
         config:
           server:
-            - $(ip addr show |grep -w inet |grep -v 127.0.0.1|awk '{ print $4}'|sed "s/255/1/g"|head -n1)
+            - 10.0.1.1
       routes:
         config:
           - destination: 0.0.0.0/0
-            next-hop-address: $(ip addr show |grep -w inet |grep -v 127.0.0.1|awk '{ print $4}'|sed "s/255/1/g"|head -n1)
+            next-hop-address: 10.0.1.1
             next-hop-interface: enp1s0
             table-id: 254
 EOF

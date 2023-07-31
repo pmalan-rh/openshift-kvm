@@ -7,19 +7,22 @@
 
 === Add Virtualization
 
+[code]
+----
 dnf install qemu-kvm libvirt virt-install virt-viewer cockpit-machines wget podman nmstate
 for drv in qemu network nodedev nwfilter secret storage interface; do systemctl start virt${drv}d{,-ro,-admin}.socket; done
 virt-host-validate
+----
 
 === Fix boot parameters - depending on CPU
 
 === Intel
-intel_iommu=on
+*intel_iommu=on*
 
     grubby –update-kernel=ALL –args=”intel_iommu=on"
 
 === Enable Nested virtualization for Openshift Virtualization
-/etc/modprobe.d/kvm.conf
+*/etc/modprobe.d/kvm.conf*
 
 		options kvm_intel nested=1
 
